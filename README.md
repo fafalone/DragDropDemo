@@ -113,9 +113,10 @@ Also, lots of things are fully qualified as there's currently an issue with conf
 But besides those quirks, the code works on x64 without major change, just updating to LongPtr where needed, and replacing the PictureBox with a Frame until that's available.
 
 Et voilà:
+
 ![Imgur](https://i.imgur.com/gysxo6r.jpg)
 
-[B]Requirements[/B]
+### Requirements
 Windows Vista or newer
 [twinBASIC Beta 100 or newer](https://github.com/twinbasic/twinbasic/releases)
 
