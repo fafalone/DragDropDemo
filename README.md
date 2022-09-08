@@ -1,4 +1,6 @@
-# DragDropDemo
+# DragDropDemo v2
+
+(Project update: V2 fixes incorrect IEnumSTATDATA definition, and since LongLong can be used on both x86 and x64, ditches the separate definitions in favor of using LongLong+CopyMemory on both)
 
 A while back I posted this project:
 
@@ -72,7 +74,7 @@ End Interface
 
 [ InterfaceId ("00000105-0000-0000-C000-000000000046") ]
 Interface IEnumSTATDATA Extends stdole.IUnknown
-    Sub Next(ByVal celt As Long, rgelt As FORMATETC, pceltFetched As Long)
+    Sub Next(ByVal celt As Long, rgelt As STATDATA, pceltFetched As Long)
     Sub Skip(ByVal celt As Long)
     Sub Reset()
     Sub Clone(ppEnum As DragDropDemo.IEnumSTATDATA)
