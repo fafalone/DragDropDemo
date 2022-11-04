@@ -93,6 +93,15 @@ Interface IDataObject Extends stdole.IUnknown
     Sub DUnadvise(ByVal dwConnection As Long)
     Function EnumDAdvise() As DragDropDemo.IEnumSTATDATA
 End Interface
+
+'CLSID_DragDropHelper 
+[ CoClassId ("4657278A-411B-11D2-839A-00C04FD918D0") ]
+[ COMCreatable ]
+CoClass DragDropHelper
+	 [ Default ] Interface IDropTargetHelper
+	Interface IDragSourceHelper
+	Interface IDragSourceHelper2
+End CoClass
 ```
 
 I used functions for some to preserve as much compatibility as possible with oleexp-using code.
@@ -121,6 +130,6 @@ Et voilà:
 
 ### Requirements
 Windows Vista or newer
-[twinBASIC Beta 100 or newer](https://github.com/twinbasic/twinbasic/releases)
+[twinBASIC Beta 167 or newer](https://github.com/twinbasic/twinbasic/releases)
 
 Thanks to twinBASIC developer Wayne Phillips for his help getting this working, and of course for the continuing great work on twinBASIC itself :thumb:
