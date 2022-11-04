@@ -35,21 +35,12 @@ Interface IDragSourceHelper2 Extends IDragSourceHelper
 End Interface
 
 [ InterfaceId ("00000122-0000-0000-C000-000000000046") ]
-#If Win64 Then
 Interface IDropTarget Extends stdole.IUnknown
-    Sub DragEnter(ByVal pDataObject As DragDropDemo.IDataObject, ByVal grfKeyState As Long, ByVal pt As LongPtr, dwEffect As DROPEFFECTS)
-    Sub DragOver(ByVal grfKeyState As Long, ByVal pt As LongPtr, pdwEffect As DROPEFFECTS)
+    Sub DragEnter(ByVal pDataObject As IDataObject, ByVal grfKeyState As Long, ByVal pt As LongLong, dwEffect As DROPEFFECTS)
+    Sub DragOver(ByVal grfKeyState As Long, ByVal pt As LongLong, pdwEffect As DROPEFFECTS)
     Sub DragLeave()
-    Sub Drop(ByVal pDataObj As DragDropDemo.IDataObject, ByVal grfKeyState As Long, ByVal pt As LongPtr, pdwEffect As DROPEFFECTS)
+    Sub Drop(ByVal pDataObj As IDataObject, ByVal grfKeyState As Long, ByVal pt As LongLong, pdwEffect As DROPEFFECTS)
 End Interface
-#Else
-Interface IDropTarget Extends stdole.IUnknown
-    Sub DragEnter(ByVal pDataObject As DragDropDemo.IDataObject, ByVal grfKeyState As Long, ByVal ptX As Long, ByVal ptY as long, dwEffect As DROPEFFECTS)
-    Sub DragOver(ByVal grfKeyState As Long, ByVal ptX As Long, ByVal ptY as long, pdwEffect As DROPEFFECTS)
-    Sub DragLeave()
-    Sub Drop(ByVal pDataObj As DragDropDemo.IDataObject, ByVal grfKeyState As Long, ByVal ptX As Long, ByVal ptY as long, pdwEffect As DROPEFFECTS)
-End Interface
-#End If
 
 [ InterfaceId ("00000121-0000-0000-C000-000000000046") ]
 Interface IDropSource Extends stdole.IUnknown
