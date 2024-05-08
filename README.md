@@ -1,4 +1,6 @@
-# DragDropDemo v2.1
+# DragDropDemo v4
+
+(Project update: v4 suppresses errors from TotalCommander and others in the DragDropHelper object since file names can usually still be retrieved.
 
 (Project update: V2.1 updates to use Coclass syntax, requires twinBASIC Beta 167 or newer)
 
