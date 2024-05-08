@@ -1,0 +1,93 @@
+[ Description ("") ]
+[ FormDesignerId ("362761DB-51E9-4746-A810-79A614E66892") ]
+[ PredeclaredId ]
+Class Form1
+Private Declare PtrSafe Function DragQueryFileW Lib "shell32.dll" (ByVal hDrop As LongPtr, ByVal iFile As Long, Optional ByVal lpszFile As LongPtr, Optional ByVal cch As Long) As Long
+Private Declare PtrSafe Function SysReAllocStringLen Lib "oleaut32.dll" (ByVal pBSTR As LongPtr, Optional ByVal pszStrPtr As LongPtr, Optional ByVal Length As Long) As Long
+Private Declare PtrSafe Function ChangeWindowMessageFilter Lib "user32.dll" (ByVal message As LongPtr, ByVal dwFlag As Long) As Long
+Private Const MSGFLT_ALLOW = 1
+Private Const MSGFLT_ADD = 1
+Private Const WM_DROPFILES As Long = &H233
+Private Const WM_COPYGLOBALDATA As Long = &H49
+Private Const WM_COPYDATA As Long = &H4A
+
+Private WithEvents cIDT As cDropTarget
+
+Private Sub cIDT_Drop(pDataObj As DragDropDemo.IDataObject, grfKeyState As Long, ptx As Long, pty As Long, pdwEffect As DragDropDemo.DROPEFFECTS)
+ 'For this project, we're just going to accept the files and pass back what
+ 'operation we did with them. But to add more functionality, you can look
+ 'at grfKeyState; that will tell you if ctrl is being held so you can move,
+ 'or if the right mouse button is down and you should show a menu of options
+ 
+ 'You're not limited to just CF_HDROP either, you could process the data object
+ 'for any clipboard format you want
+ Dim fmt As FORMATETC
+ fmt.cfFormat = CF_HDROP
+ fmt.TYMED = TYMED_HGLOBAL
+ fmt.dwAspect = DVASPECT_CONTENT
+ fmt.lIndex = -1
+ 
+ Dim stg As STGMEDIUM
+ pDataObj.QueryGetData(fmt)
+ If Err.LastHResult = S_OK Then
+    pDataObj.GetData fmt, stg
+    Dim nFiles As Long, sFiles() As String
+    Dim i As Long
+    Dim sBuffer As String
+    nFiles = DragQueryFileW(stg.data, &HFFFFFFFF, 0, 0)
+    ReDim sFiles(nFiles - 1)
+    For i = 0 To nFiles - 1
+        SysReAllocStringLen VarPtr(sBuffer), , DragQueryFileW(stg.data, i)
+        DragQueryFileW stg.data, i, StrPtr(sBuffer), Len(sBuffer) + 1&
+        sFiles(i) = sBuffer
+    Next
+Else
+    Debug.Print "failed querygetdata"
+End If
+Text1.Text = Text1.Text & vbCrLf & "Dropped: " & Join(sFiles, ", ")
+pdwEffect = DROPEFFECT_NONE 'We didn't do anything with the dropped files here,
+                            'but if you do move/copy/link them, report that back
+End Sub
+
+Private Sub Form_Load() Handles Form.Load
+Set cIDT = New cDropTarget
+Dim hr As Long
+ChangeWindowMessageFilter WM_DROPFILES, MSGFLT_ADD
+ChangeWindowMessageFilter WM_COPYGLOBALDATA, MSGFLT_ADD
+ChangeWindowMessageFilter WM_COPYDATA, MSGFLT_ADD
+hr = cIDT.Attach(Me.hWnd)
+Text1.Text = "attach hr=" & Hex$(hr)
+
+
+End Sub
+
+Private Sub cIDT_DragEnter(pDataObj As DragDropDemo.IDataObject, grfKeyState As Long, ptx As Long, pty As Long, pdwEffect As DROPEFFECTS) Handles cIDT.DragEnter
+ Dim fmt As FORMATETC
+ fmt.cfFormat = CF_HDROP
+ fmt.TYMED = TYMED_HGLOBAL
+ fmt.dwAspect = DVASPECT_CONTENT
+ fmt.lIndex = -1
+ 
+ Dim stg As STGMEDIUM
+ pDataObj.QueryGetData(fmt)
+ If Err.LastHResult = S_OK Then
+    pDataObj.GetData fmt, stg
+    Dim nFiles As Long, sFiles() As String
+    Dim i As Long
+    Dim sBuffer As String
+    nFiles = DragQueryFileW(stg.data, &HFFFFFFFF, 0, 0)
+    ReDim sFiles(nFiles - 1)
+    For i = 0 To nFiles - 1
+        SysReAllocStringLen VarPtr(sBuffer), , DragQueryFileW(stg.data, i)
+        DragQueryFileW stg.data, i, StrPtr(sBuffer), Len(sBuffer) + 1&
+        sFiles(i) = sBuffer
+    Next
+Else
+    Debug.Print "failed querygetdata"
+End If
+' Text1.Text = ""
+Text1.Text = Text1.Text & vbCrLf & "DragEnter " & Join(sFiles, ", ")
+pdwEffect = DROPEFFECT_COPY
+End Sub
+
+End Class

@@ -1,0 +1,113 @@
+
+
+Class cDropTarget
+Option Explicit
+'---------------------------------------------------------------------
+'cDropTarget 0.4 (x64 compatible version updated for twinBASIC)
+'Provides a modern drop target that shows drag images automatically,
+'with generic events to hand off processing to the object
+'Usage:
+'-Create new instance of this class for each drop target
+'-Call the .Attach function
+'-Handle events
+'Detach is automatically called when the class terminates, but you
+'can also call it at any time to turn off drop target functionality.
+'
+'(c) 2016-2024 by fafalone
+'
+'v0.4.1 - Updated to suppress errors from TotalCommander and others
+'         that the DragDropHelper object raises errors on.
+'v0.3.2 - Updated to use Coclass, requires twinBASIC Beta 167+
+'---------------------------------------------------------------------
+
+
+Private Declare PtrSafe Function CoCreateInstance Lib "ole32" (rclsid As Any, ByVal pUnkOuter As LongPtr, ByVal dwClsContext As CLSCTX, riid As Any, pvarResult As Any) As Long
+Private Declare PtrSafe Function CLSIDFromString Lib "ole32" (ByVal lpszGuid As LongPtr, pGuid As Any) As Long
+Private Declare PtrSafe Function RegisterDragDrop Lib "ole32" (ByVal hwnd As LongPtr, ByVal DropTarget As IDropTarget) As Long
+Private Declare PtrSafe Function RevokeDragDrop Lib "ole32" (ByVal hwnd As LongPtr) As Long
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
+Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+
+'IDropTargetHelper is what lets us show the drag image
+Private pDTH As DragDropHelper
+
+Private m_hWnd As LongPtr
+
+Public Event DragEnter(pDataObj As IDataObject, grfKeyState As Long, ptx As Long, pty As Long, pdwEffect As DROPEFFECTS)
+Public Event DragOver(grfKeyState As Long, ptx As Long, pty As Long, pdwEffect As DROPEFFECTS)
+Public Event Drop(pDataObj As IDataObject, grfKeyState As Long, ptx As Long, pty As Long, pdwEffect As DROPEFFECTS)
+Public Event DragLeave()
+
+Implements IDropTarget
+
+Private Sub IDropTarget_DragEnter(ByVal pDataObj As IDataObject, ByVal grfKeyState As Long, ByVal pt As LongLong, pdwEffect As DROPEFFECTS)
+    Dim ptt As POINT
+    CopyMemory ptt, pt, LenB(ptt)
+    Form1.Text1.Text = Form1.Text1.Text & vbCrLf & "DragEnter(" & Hex$(grfKeyState) & ",{" & ptt.x & "," & ptt.y & "}," & pdwEffect & ")"
+    On Error Resume Next
+    pDTH.DragEnter m_hWnd, pDataObj, ptt, pdwEffect
+    On Error GoTo e0
+    RaiseEvent DragEnter(pDataObj, grfKeyState, ptt.x, ptt.y, pdwEffect)
+    Err.ReturnHResult = S_OK
+    Exit Sub
+    e0:
+    Debug.Print "DragEnter error=0x" & Hex$(Err.Number)
+    
+End Sub
+
+Private Sub IDropTarget_DragLeave()
+Debug.Print "DragLeave"
+
+pDTH.DragLeave
+RaiseEvent DragLeave
+End Sub
+
+Private Sub IDropTarget_DragOver(ByVal grfKeyState As Long, ByVal pt As LongLong, pdwEffect As DROPEFFECTS)
+    Dim ptt As POINT
+    CopyMemory ptt, pt, LenB(ptt)
+'   Form1.Text1.Text = Form1.Text1.Text & vbCrLf & "DragOver"
+    'Debug.Print "DragOver"
+    pDTH.DragOver ptt, pdwEffect
+    Err.ReturnHResult = S_OK
+     RaiseEvent DragOver(grfKeyState, ptt.x, ptt.y, pdwEffect)
+    'Notice that the text shows 'Move' in the caption; you can change pdwEffect to something else
+    
+    'pdwEffect = DROPEFFECT_NONE 'this shows that a drop is not allowed, and the drop event won't fire
+End Sub
+
+Private Sub IDropTarget_Drop(ByVal pDataObj As IDataObject, ByVal grfKeyState As Long, ByVal pt As LongLong, pdwEffect As DROPEFFECTS)
+    Dim ptt As POINT
+    CopyMemory ptt, pt, LenB(ptt)
+    Debug.Print "Drop"
+    Form1.Text1.Text = Form1.Text1.Text & vbCrLf & "Drop"
+    On Error Resume Next
+    pDTH.Drop pDataObj, ptt, pdwEffect
+    On Error GoTo 0
+    Err.ReturnHResult = S_OK
+    RaiseEvent Drop(pDataObj, grfKeyState, ptt.x, ptt.y, pdwEffect)
+    Sleep 10000
+End Sub
+
+
+Public Function Attach(hwnd As LongPtr) As Long
+'after configuring settings, call this to attach to an hWnd
+m_hWnd = hwnd
+Attach = RegisterDragDrop(hwnd, Me)
+End Function
+Public Function Detach() As Long
+'There's an appcrash if revoke is called on an unregistered window
+If RegisterDragDrop(m_hWnd, Me) = DRAGDROP_E_ALREADYREGISTERED Then
+    Detach = RevokeDragDrop(m_hWnd)
+End If
+End Function
+
+Private Sub Class_Initialize()
+Set pDTH = New DragDropHelper
+End Sub
+
+Private Sub Class_Terminate()
+Call Detach
+Set pDTH = Nothing
+End Sub
+
+End Class
