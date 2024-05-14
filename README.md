@@ -1,4 +1,6 @@
-# DragDropDemo v4
+# DragDropDemo v5
+
+(Project update: v5 adds force registration option to Attach to unregister an existing drop target. Primarily to sync with the VB6 version, as tB doesn't currently have the bug where it registers dragdrop for a form with windowless UC where neither enable dragdrop.
 
 (Project update: v4 suppresses errors from TotalCommander and others in the DragDropHelper object since file names can usually still be retrieved.
 
