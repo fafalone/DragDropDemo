@@ -3,20 +3,26 @@
 Class cDropTarget
 Option Explicit
 '---------------------------------------------------------------------
-'cDropTarget 0.4 (x64 compatible version updated for twinBASIC)
+'cDropTarget 0.5 (x64 compatible version updated for twinBASIC)
 'Provides a modern drop target that shows drag images automatically,
 'with generic events to hand off processing to the object
 'Usage:
 '-Create new instance of this class for each drop target
 '-Call the .Attach function
 '-Handle events
-'Detach is automatically called when the class terminates, but you
-'can also call it at any time to turn off drop target functionality.
+'Detach is automatically called when the class terminates, but you can
+'also call it at any time to turn off drop target functionality.
 '
 '(c) 2016-2024 by fafalone
 '
-'v0.4.1 - Updated to suppress errors from TotalCommander and others
-'         that the DragDropHelper object raises errors on.
+'v0.5.1 - Added optional argument bTakeOverExisting, defaulting to True,
+'         to unregister drag drop if another control has already registered,
+'         and use this class instead. Usefor for windowless UserControls,
+'         which register the entire window even when dragdrop is disabled.
+'
+'v0.4.1 - Updated to suppress errors from TotalCommander and others that
+'         the DragDropHelper object raises errors on.
+'
 'v0.3.2 - Updated to use Coclass, requires twinBASIC Beta 167+
 '---------------------------------------------------------------------
 
@@ -89,10 +95,14 @@ Private Sub IDropTarget_Drop(ByVal pDataObj As IDataObject, ByVal grfKeyState As
 End Sub
 
 
-Public Function Attach(hwnd As LongPtr) As Long
-'after configuring settings, call this to attach to an hWnd
-m_hWnd = hwnd
-Attach = RegisterDragDrop(hwnd, Me)
+Public Function Attach(hWnd As LongPtr, Optional bTakeOverExisting As Boolean = True) As Long
+    'after configuring settings, call this to attach to an hWnd
+    m_hWnd = hWnd
+    Attach = RegisterDragDrop(hWnd, Me)
+    If (Attach = DRAGDROP_E_ALREADYREGISTERED) And (bTakeOverExisting = True) Then
+        RevokeDragDrop hWnd
+        Attach = RegisterDragDrop(hWnd, Me)
+    End If
 End Function
 Public Function Detach() As Long
 'There's an appcrash if revoke is called on an unregistered window
