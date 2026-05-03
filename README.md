@@ -1,5 +1,7 @@
 # DragDropDemo v5
 
+**Update:** I've added DragDropDemoWDL.twinproj that uses WinDevLib for interfaces/APIs. WDL uses proper ByVal UDTs instead of hacks and has minor API signature  differences due to stricter standards for SDK compatibility. The original project is left up as an intro to defining interfaces yourself in tB.
+
 (Project update: v5 adds force registration option to Attach to unregister an existing drop target. Primarily to sync with the VB6 version, as tB doesn't currently have the bug where it registers dragdrop for a form with windowless UC where neither enable dragdrop.
 
 (Project update: v4 suppresses errors from TotalCommander and others in the DragDropHelper object since file names can usually still be retrieved.
